@@ -82,9 +82,9 @@ function bindFunction(fn) {
     }
 
     args = args.slice(1, args.length);
-    var resultFunction = fn.bind(null, ...args);
+    var resultFunc = fn.bind(null, ...args);
 
-    return resultFunction;
+    return resultFunc;
 }
 
 export {
