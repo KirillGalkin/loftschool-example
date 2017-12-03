@@ -1,97 +1,175 @@
-/* ДЗ 1 - Функции */
+/* ДЗ 2 - работа с исключениями и отладчиком */
 
 /*
- Задание 1:
-
- Функция должна принимать один аргумент и возвращать его
+ Задача 1:
+ Функция принимает массив и фильтрующую фукнцию и должна вернуть true или false
+ Функция должна вернуть true только если fn вернула true для всех элементов массива
+ Необходимо выбрасывать исключение в случаях:
+ - array не массив или пустой массив (с текстом "empty array")
+ - fn не является функцией (с текстом "fn is not a function")
+ Зарпещено использовать встроенные методы для работы с массивами
  */
-function returnFirstArgument(arg) {
-    return arg;
-}
+function isAllTrue(array, fn) {
+    var fnResult = 0;
+    var arrError = 'empty array';
+    var fnError = 'fn is not a function';
 
-/*
- Задание 2:
-
- Функция должна принимать два аргумента и возвращать сумму переданных значений
- Значение по умолчанию второго аргумента должно быть 100
- */
-function defaultParameterValue(a, b) {
-    if (b === undefined) {
-        b = 100;
+    if (array instanceof Array !== true || array.length === 0) {
+        throw new Error(arrError);
+    }
+    if (typeof fn !== 'function') {
+        throw new Error(fnError);
     }
 
-    return a + b;
-}
-
-/*
- Задание 3:
-
- Функция должна возвращать все переданные в нее аргументы в виде массива
- Количество переданных аргументов заранее неизвестно
- */
-function returnArgumentsArray() {
-
-    var argArr = [];
-
-    for (var i = 0; i < arguments.length; i++) {
-        argArr.push(arguments[i]);
+    for (var i = 0; i < array.length; i++) {
+        if (fn(array[i]) === true) {
+            fnResult++;
+        } else {
+            fnResult--;
+        }
     }
 
-    return argArr;
+    if (fnResult === array.length) {
+        return true;
+    }
+
+    return false;
 
 }
 
 /*
- Задание 4:
-
- Функция должна принимать другую функцию и возвращать результат вызова переданной функции
+ Задача 2:
+ Функция принимает массив и фильтрующую фукнцию и должна вернуть true или false
+ Функция должна вернуть true если fn вернула true хотя бы для одного из элементов массива
+ Необходимо выбрасывать исключение в случаях:
+ - array не массив или пустой массив (с текстом "empty array")
+ - fn не является функцией (с текстом "fn is not a function")
+ Зарпещено использовать встроенные методы для работы с массивами
  */
-function returnFnResult(fn) {
+function isSomeTrue(array, fn) {
+    var fnResult = 0;
+    var arrError = 'empty array';
+    var fnError = 'fn is not a function';
 
-    return fn();
+    if (array instanceof Array !== true || array.length === 0) {
+        throw new Error(arrError);
+    }
+    if (typeof fn !== 'function') {
+        throw new Error(fnError);
+    }
+
+    for (var i = 0; i < array.length; i++) {
+        if (fn(array[i]) === true) {
+            fnResult++;
+        }
+    }
+
+    if (fnResult > 0) {
+        return true;
+    }
+
+    return false;
+
 }
 
 /*
- Задание 5:
-
- Функция должна принимать число (значение по умолчанию - 0) и возвращать функцию (F)
- При вызове F, переданное число должно быть увеличено на единицу и возвращено из F
+ Задача 3:
+ Функция принимает заранее неизветсное количество аргументов, первым из которых является функция fn
+ Функция должна поочередно запусти fn для каждого переданного аргумента (кроме самой fn)
+ Функция должна вернуть массив аргументов, для которых fn выбросила исключение
+ Необходимо выбрасывать исключение в случаях:
+ - fn не является функцией (с текстом "fn is not a function")
  */
-function returnCounter(number) {
-    if (number === undefined) {
-        number = 0;
+function returnBadArguments(fn) {
+    var argArray = [...arguments];
+    var resultArr = [];
+
+    if (typeof fn !== 'function') {
+        throw new Error ('fn is not a function');
     }
 
-    return function F() {
+    for (var i = 1; i < argArray.length; i++) {
+        try {
+            fn(argArray[i]);
+        } catch (e) {
+            resultArr.push(argArray[i]);
+        }
 
-        return ++number;
     }
+
+    return resultArr;
 }
 
 /*
- Задание 6 *:
+ Задача 4:
+ Функция имеет параметр number (по умолчанию - 0)
+ Функция должна вернуть объект, у которого должно быть несколько методов:
+ - sum - складывает number с переданными аргументами
+ - dif - вычитает из number переданные аргументы
+ - div - делит number на первый аргумент. Результат делится на следующий аргумент (если передан) и так далее
+ - mul - умножает number на первый аргумент. Результат умножается на следующий аргумент (если передан) и так далее
 
- Функция должна принимать другую функцию (F) и некоторое количество дополнительных аргументов
- Функция должна привязать переданные аргументы к функции F и вернуть получившуюся функцию
+ Количество передаваемых в методы аргументов заранее неизвестно
+ Необходимо выбрасывать исключение в случаях:
+ - number не является числом (с текстом "number is not a number")
+ - какой-либо из аргументов div является нулем (с текстом "division by 0")
  */
-function bindFunction(fn) {
-    var args = [];
+function calculator(number = 0) {
 
-    for (var i = 0; i < arguments.length; i++) {
-        args[i] = arguments[i];
+    if (typeof number !== 'number') {
+        throw new Error ('number is not a number');
     }
+    var obj = {
+        sum() {
+            var argArr = [...arguments];
+            var result = argArr.reduce((summ, current)=> {
+                return summ + current;
+            });
 
-    args = args.slice(1, args.length);
-    var resultFunc = fn.bind(null, ...args);
+            return result + number;
+        },
+        dif() {
+            var argArr = [...arguments];
 
-    return resultFunc;
+            argArr.unshift(number);
+            var result = argArr.reduce((diff, current)=> {
+                return diff - current;
+            });
+
+            return result;
+        },
+        div() {
+            var argArr = [...arguments];
+
+            argArr.unshift(number);
+            var result = argArr.reduce((divv, current)=> {
+
+                if (current === 0) {
+                    throw new Error ('division by 0');
+                }
+
+                return divv/current;
+            });
+
+            return result;
+        },
+        mul() {
+            var argArr = [...arguments];
+            var result = argArr.reduce((mull, current)=> {
+                return mull*current;
+            });
+
+            return result * number;
+        }
+    };
+
+    return obj;
+
 }
 
 export {
-    returnFirstArgument,
-    defaultParameterValue,
-    returnArgumentsArray,
-    returnFnResult,
-    returnCounter,
-    bindFunction
-}
+    isAllTrue,
+    isSomeTrue,
+    returnBadArguments,
+    calculator
+};
