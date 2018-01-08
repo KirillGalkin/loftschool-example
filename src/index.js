@@ -170,6 +170,61 @@ function deleteTextNodesRecursive(where) {
  * }
  */
 function collectDOMStat(root) {
+    let resultObj = {};
+    let tagsArr = [];
+    let classArr = [];
+    let textCounter = 0;
+
+    function recursiveSearch(node) {
+        let elements = node.childNodes;
+
+        for (let i = 0; i < elements.length; i++) {
+            if (elements[i] && elements[i].nodeType === 3) {
+                textCounter++;
+            } else if (elements[i] && elements[i].nodeType === 1) {
+                tagsArr.push(elements[i].tagName);
+                if (elements[i].getAttribute('class')) {
+                    classArr.push(elements[i].className.split(' '))
+                }
+                recursiveSearch(elements[i])
+            }
+        }
+    }
+
+    recursiveSearch(root);
+
+    function createObjStats (arr, classFlag) {
+        let finalArr = [],
+            objStats = {};
+
+        if (classFlag) {
+            arr = arr.join().split(',');
+        }
+
+        arr.sort();
+        arr.forEach(function(item, i, array) {
+            if (array[i + 1] !== item || !array[i + 1]) {
+                finalArr.push(item);
+            }
+        });
+
+        finalArr.forEach(function(item) {
+            if (classFlag) {
+                objStats[item] = root.querySelectorAll('.' + item).length;
+            } else {
+                objStats[item] = root.querySelectorAll(item).length;
+            }
+        });
+
+        return objStats;
+
+    }
+
+    resultObj.tags = createObjStats(tagsArr, false);
+    resultObj.classes = createObjStats(classArr, true);
+    resultObj.texts = textCounter;
+
+    return resultObj;
 }
 
 /**
@@ -204,6 +259,35 @@ function collectDOMStat(root) {
  * }
  */
 function observeChildNodes(where, fn) {
+    let observer = new MutationObserver(mutCb),
+        objValues = {
+            nodes: []
+        };
+
+    function mutCb(mutationRecord) {
+
+        mutationRecord.forEach(function(mutRec) {
+
+            if (mutRec.addedNodes.length) {
+                objValues.type = 'insert';
+                for (let i = 0; i < mutRec.addedNodes.length; i++) {
+                    objValues.nodes.push(mutRec.addedNodes[i]);
+                }
+            } else if (mutRec.removedNodes.length) {
+                objValues.type = 'remove';
+                for (let i = 0; i < mutRec.removedNodes.length; i++) {
+                    objValues.nodes.push(mutRec.removedNodes[i]);
+                }
+            }
+        });
+
+        fn(objValues);
+    }
+
+    observer.observe(where, {
+        subtree: true,
+        childList: true
+    });
 }
 
 export {
