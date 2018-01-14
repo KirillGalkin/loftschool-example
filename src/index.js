@@ -31,9 +31,6 @@ function loadAndSortTowns() {
         xhr.send();
         xhr.addEventListener('load', () => {
             let citiesArr = JSON.parse(xhr.response);
-            //     .map((el) => {
-            //     citiesArr.push(el.name);
-            // });
 
             let compareCities = function(previousCity, nextCity) {
                 if (previousCity.name > nextCity.name) {
@@ -45,7 +42,6 @@ function loadAndSortTowns() {
             };
 
             citiesArr.sort(compareCities);
-            console.log(citiesArr);
             resolve(citiesArr);
         })
     })

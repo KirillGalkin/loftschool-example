@@ -36,8 +36,36 @@ let homeworkContainer = document.querySelector('#homework-container');
  * @return {Promise<Array<{name: string}>>}
  */
 function loadTowns() {
-}
+    return new Promise((resolve, reject) => {
+        let xhr = new XMLHttpRequest();
 
+        xhr.open('GET', 'https://raw.githubusercontent.com/smelukov/citiesTest/master/cities.json');
+        xhr.send();
+        xhr.addEventListener('load', () => {
+
+            if (xhr.status === 200) {
+                let citiesArr = JSON.parse(xhr.response);
+
+                let compareCities = function (previousCity, nextCity) {
+                    if (previousCity.name > nextCity.name) {
+                        return 1;
+                    }
+                    if (previousCity.name < nextCity.name) {
+                        return -1;
+                    }
+                };
+
+                citiesArr.sort(compareCities);
+                resolve(citiesArr);
+            } else {
+                reject();
+            }
+        });
+        xhr.addEventListener('error', () => {
+            reject();
+        });
+    })
+}
 /**
  * Функция должна проверять встречается ли подстрока chunk в строке full
  * Проверка должна происходить без учета регистра символов
@@ -52,15 +80,60 @@ function loadTowns() {
  * @return {boolean}
  */
 function isMatching(full, chunk) {
+
+    if (full.toLowerCase().indexOf(chunk.toLowerCase()) !== -1 ) {
+        return true
+    }
+
+    return false
 }
 
 let loadingBlock = homeworkContainer.querySelector('#loading-block');
 let filterBlock = homeworkContainer.querySelector('#filter-block');
 let filterInput = homeworkContainer.querySelector('#filter-input');
 let filterResult = homeworkContainer.querySelector('#filter-result');
-let townsPromise;
+// let townsPromise;
+let repeatButton = document.createElement('button');
+let errorBlock = document.createElement('div');
+let citiesList = [];
+
+let showList = function (citiesArr) {
+    citiesList = citiesArr;
+    loadingBlock.style.display = 'none';
+    filterBlock.style.display = 'block';
+    errorBlock.style.display = 'none';
+    repeatButton.style.display = 'none';
+};
+
+let showError = function () {
+    loadingBlock.style.display = 'none';
+    errorBlock.textContent = 'Не удалось загрузить города';
+    repeatButton.textContent = 'Повторить';
+    homeworkContainer.appendChild(errorBlock);
+    homeworkContainer.appendChild(repeatButton);
+};
+
+loadTowns()
+    .then(showList)
+    .catch(showError)
+
+repeatButton.addEventListener('click', () => {
+    loadingBlock.style.display = 'block';
+    loadTowns()
+        .then(showList)
+        .catch(showError)
+});
 
 filterInput.addEventListener('keyup', function() {
+    filterResult.textContent = '';
+    citiesList.forEach(function (item) {
+        if (isMatching(item.name, filterInput.value.trim())) {
+            filterResult.innerHTML += item.name + '<br>';
+        }
+    })
+    if (!filterInput.value) {
+        filterResult.textContent = '';
+    }
 });
 
 export {
