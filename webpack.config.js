@@ -16,10 +16,10 @@ loaders.push({
 module.exports = {
     entry: {
         main: './src/index.js',
-        towns: './src/towns.js'
+        cookie: './src/cookie.js'
     },
     output: {
-        filename: '[name].[hash].js',
+        filename: '[name].[hash].js', // correct
         path: path.resolve('dist')
     },
     devtool: 'source-map',
@@ -27,7 +27,7 @@ module.exports = {
         loaders
     },
     plugins: [
-        // new webpack.optimize.UglifyJsPlugin({
+        // new webpack.optimize.UglifyJsPlugin({ // correct
         //     sourceMap: true,
         //     compress: {
         //         drop_debugger: false
@@ -41,9 +41,9 @@ module.exports = {
         }),
         new HtmlPlugin({
             title: 'Div Drag And Drop',
-            template: 'towns.hbs',
-            filename: 'towns.html',
-            chunks: ['towns']
+            template: 'cookie.hbs',
+            filename: 'cookie.html',
+            chunks: ['cookie']
         }),
         new CleanWebpackPlugin(['dist'])
     ]
